@@ -1,0 +1,60 @@
+Descrição do Circuito
+ESP32: Controlador central do circuito, que gerencia a leitura dos sensores e o acionamento do relé.
+Relé: Conectado ao pino 3, é responsável por ligar e desligar uma carga externa (como uma bomba d'água) com base em certas condições definidas no código.
+Sensor DHT22: Conectado ao pino 15, mede temperatura e umidade. Esse sensor é inicializado e suas leituras são verificadas e exibidas no monitor serial.
+LDR (Sensor de Luz): Conectado ao pino analógico 0, mede a luminosidade do ambiente. O valor lido é exibido no monitor serial.
+Dois Botões: Um no pino 14 e o outro no pino 32, configurados como entradas com pull-up interno. Esses botões permitem controle manual sobre o relé.
+Descrição do Código
+O código foi escrito para realizar as seguintes funções:
+
+Configuração: Inicializa o monitor serial e configura os pinos do relé e dos botões. Inicializa o sensor DHT22 para leitura de temperatura e umidade.
+
+Loop Principal:
+
+Lê os valores de temperatura, umidade e luminosidade (LDR).
+Exibe os valores de temperatura, umidade e luminosidade no monitor serial.
+Verifica o estado dos botões e exibe o status (pressionado ou solto) no monitor serial.
+Condicionalmente, aciona o relé com base nos estados dos botões, na leitura do LDR, ou em condições de temperatura e umidade:
+O relé é ativado se um dos botões estiver pressionado, se a luminosidade for baixa (LDR < 500), se a temperatura for maior que 25 °C, ou se a umidade for inferior a 60%.
+Caso contrário, o relé é desligado.
+
+Estrutura da Tabela SQL
+A tabela dados_sensores possui os seguintes campos:
+
+id: Chave primária gerada automaticamente.
+data_hora: Timestamp com o momento da inserção dos dados.
+temperatura: Número que armazena a temperatura lida.
+umidade: Número que armazena a umidade lida.
+ldr: Número que armazena a leitura do sensor de luz (LDR).
+botao1 e botao2: Estado dos botões (0 ou 1).
+rele: Estado do relé (0 ou 1).
+Estrutura do Código Python
+1. Função conectar_oracle
+Esta função configura a conexão com o banco de dados Oracle:
+
+Define o usuário (sys) e senha (carro) e configura o DSN para conectar ao serviço "XE" no host "---".
+O modo de conexão é SYSDBA, permitindo permissões administrativas.
+Retorna a conexão para uso nas operações CRUD. Em caso de erro, exibe uma mensagem.
+2. Função inserir_dados
+Lê dados do usuário para os campos temperatura, umidade, ldr, botao1, botao2, e rele.
+Insere esses dados na tabela dados_sensores.
+Utiliza cursor.execute para executar a query de inserção e conexao.commit() para salvar as mudanças no banco de dados.
+Em caso de erro, exibe uma mensagem de erro.
+3. Função consultar_historico
+Recupera todos os registros de dados_sensores, ordenados por data_hora em ordem decrescente.
+Exibe cada linha com informações detalhadas (ID, Data/Hora, Temperatura, Umidade, etc.).
+Caso ocorra algum erro, exibe uma mensagem.
+4. Função atualizar_dados
+Solicita o ID do registro a ser atualizado.
+Para cada campo (temperatura, umidade, LDR, etc.), permite ao usuário inserir um novo valor ou deixá-lo em branco se não quiser alterar.
+Verifica quais campos têm valores não vazios e monta uma lista de campos a serem atualizados.
+Executa uma query de atualização para modificar os valores selecionados e faz commit para salvar as alterações.
+Em caso de erro, exibe uma mensagem de erro.
+5. Função deletar_dados
+Solicita o ID do registro a ser deletado.
+Executa uma query DELETE para remover o registro especificado da tabela.
+Usa commit() para confirmar a remoção e exibe uma mensagem de sucesso. Em caso de erro, exibe uma mensagem de erro.
+6. Função menu
+Exibe um menu para o usuário escolher uma operação: Inserir, Consultar, Atualizar, Deletar ou Sair.
+Cada opção chama a função correspondente. Por exemplo, opcao == '1' chama inserir_dados.
+Fecha a conexão ao banco de dados ao sair do programa.
